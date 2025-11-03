@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>tips</title>
+<style>
+  html,body{
+    height:100%;margin:0;overflow:hidden;
+    font-family:"微软雅黑",sans-serif;
+    background:radial-gradient(circle at 50% 45%,#fef6f9 0%,#cbeeff 100%);
+  }
+  .stage{position:relative;width:100%;height:100%;}
+  .msg{
+    position:absolute;left:50%;top:50%;
+    padding:16px 26px;border-radius:18px;
+    color:#fff;font-weight:700;
+    font-size:clamp(16px,3.5vmin,28px);
+    text-shadow:0 2px 8px rgba(0,0,0,.3);
+    opacity:0;
+    transform:translate(-50%,-50%) translate(var(--dx),var(--dy)) scale(.7) rotate(var(--rot));
+    animation:fly var(--dur) cubic-bezier(.25,.7,.3,1) var(--delay) both;
+    box-shadow:0 8px 26px rgba(0,0,0,.25);
+  }
+  @keyframes fly{
+    0%{opacity:0;transform:translate(-50%,-50%) translate(var(--dx),var(--dy)) scale(.7) rotate(var(--rot));}
+    15%{opacity:1;}
+    55%{opacity:1;transform:translate(-50%,-50%) translate(calc(var(--dx)*.1),calc(var(--dy)*.1)) scale(1.02);}
+    90%{opacity:1;transform:translate(-50%,-50%) translate(0,0) scale(1) rotate(0deg);}
+    100%{opacity:0;transform:translate(-50%,-50%) translate(0,0) scale(1.03);}
+  }
+  .replay{
+    position:absolute;right:18px;bottom:18px;
+    padding:10px 14px;border:none;border-radius:10px;
+    background:rgba(255,255,255,.4);
+    backdrop-filter:blur(8px);
+    color:#222;font-weight:600;cursor:pointer;
+    box-shadow:0 5px 20px rgba(0,0,0,.25);
+  }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage"></div>
+  <button class="replay" id="replay">重放</button>
+
+<script>
+const tips=[
+'天天开心','我好想你','照顾好自己','我好爱你','记得多穿衣服','记得开心','一切顺利',
+'你要好好的','我会一直在','嘿嘿','我在呢','宝宝加油','早点休息','多喝热水','出门带伞',
+'按时吃饭','想你的一天','抱抱你','不怕 有我呢','今天也要元气满满','你是最棒的','小心感冒',
+'路上注意安全','相信自己','一切都会好起来','慢慢来不着急','笑一笑','摸摸头','好梦常在',
+'阳光会来的','我等你','别熬夜啦','喝点热汤','记得吃早餐','今天会更好','你值得被爱',
+'努力会有回响','我超喜欢你','别怕我在','拥抱是答案','给你小花花','小幸运在路上',
+'愿你心情晴朗','天气冷了加衣','温柔以待自己','你的笑真好看','保持可爱','出门顺利',
+'平安喜乐','星河为你闪烁','遇见都是礼物','热爱就在此刻','生活会抱抱你','你的小太阳来了',
+'心怀浪漫宇宙','点亮今天','给你满分运气','我会一直陪你','继续加油','梦想就在不远处',
+'你一定行','希望永远在','不要害怕','风会带走烦恼','你是独一无二的','微笑面对一切',
+'心情好天气就好','加油啊未来可期','你的努力会发光','生活慢一点没关系','放轻松',
+'善待自己','别忘了呼吸','深夜也会有星光','你值得最好的','愿世界温柔待你',
+'感谢有你','每一天都新的开始','一起向阳','相信光','未来在等你','继续前进',
+'没有过不去的坎','爱自己','记得吃水果','要开心噢','星光不问赶路人','明天会更好',
+'放下焦虑','风会告诉你方向','幸福就在身边','你已经做得很好','善良的人最幸运',
+'时间会治愈一切','温暖永不缺席','每一次微笑都值得','别忘记初心','每一步都算数',
+'夜色温柔','你本身就是光','世界很大慢慢看','相信奇迹','心中有爱','保持热爱',
+'有梦就去追','你是最美的意外','勇敢一点','别怕犯错','雨后会晴','你值得所有美好',
+'星辰大海属于你','别忘了休息','喝杯奶茶','开心每一天','心若向阳无畏悲伤',
+'好运连连','笑容最可爱','你很棒！','温柔又坚定','做个发光的人','风吹来的都是好运',
+'生活要有小惊喜','期待明天','珍惜现在','梦会实现','保持热情','去感受风和自由',
+'幸福是一种选择','今天也要闪闪发光','你的小可爱来了','要一直幸福呀','明天见～'
+];
+
+const stage=document.getElementById('stage');
+const replay=document.getElementById('replay');
+
+// 所有方向：上/下/左/右/左上/右上/左下/右下/正上/正下/正左/正右
+const directions=[
+  {dx:'0vw',dy:'-80vh'},   // 上
+  {dx:'0vw',dy:'80vh'},    // 下
+  {dx:'-80vw',dy:'0vh'},   // 左
+  {dx:'80vw',dy:'0vh'},    // 右
+  {dx:'-70vw',dy:'-70vh'}, // 左上
+  {dx:'70vw',dy:'-70vh'},  // 右上
+  {dx:'-70vw',dy:'70vh'},  // 左下
+  {dx:'70vw',dy:'70vh'},   // 右下
+  {dx:'0vw',dy:'-60vh'},   // 中上
+  {dx:'0vw',dy:'60vh'},    // 中下
+  {dx:'-60vw',dy:'0vh'},   // 中左
+  {dx:'60vw',dy:'0vh'}     // 中右
+];
+
+function rand(min,max){return Math.random()*(max-min)+min;}
+function randomColor(){
+  const colors=[
+    ['#ff758c','#ff7eb3'],
+    ['#a18cd1','#fbc2eb'],
+    ['#f6d365','#fda085'],
+    ['#84fab0','#8fd3f4'],
+    ['#f093fb','#f5576c'],
+    ['#4facfe','#00f2fe'],
+    ['#43e97b','#38f9d7'],
+    ['#fa709a','#fee140'],
+    ['#30cfd0','#330867'],
+    ['#5ee7df','#b490ca']
+  ];
+  const c=colors[Math.floor(Math.random()*colors.length)];
+  return `linear-gradient(135deg,${c[0]},${c[1]})`;
+}
+
+function createMsg(i){
+  const el=document.createElement('div');
+  el.className='msg';
+  const d=directions[Math.floor(Math.random()*directions.length)];
+  el.style.setProperty('--dx',d.dx);
+  el.style.setProperty('--dy',d.dy);
+  el.style.setProperty('--rot',rand(-60,60)+'deg');
+  el.style.setProperty('--dur',(rand(6.5,9))+'s'); // 更慢节奏
+  el.style.setProperty('--delay',(i*0.13+rand(0,0.5))+'s');
+  el.style.background=randomColor();
+  el.textContent=tips[Math.floor(Math.random()*tips.length)];
+  el.addEventListener('animationend',()=>el.remove());
+  stage.appendChild(el);
+}
+
+function play(){
+  stage.querySelectorAll('.msg').forEach(m=>m.remove());
+  for(let i=0;i<300;i++) createMsg(i);
+}
+play();
+replay.onclick=play;
+</script>
+</body>
+</html>
